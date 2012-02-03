@@ -1,0 +1,107 @@
+<?php
+
+abstract class TreeTestAbstract extends DrupalWebTestCase {
+  protected function createItems(Tree_Storage_Testable $storage) {
+    $this->root1 = $storage->create();
+    $storage->save($this->root1);
+
+    $this->root_child1 = $storage->create();
+    $this->root_child1->parent = $this->root1->id;
+    $storage->save($this->root_child1);
+
+    $this->child1_child = $storage->create();
+    $this->child1_child->parent = $this->root_child1->id;
+    $storage->save($this->child1_child);
+
+    $this->root_child2 = $storage->create();
+    $this->root_child2->parent = $this->root1->id;
+    $storage->save($this->root_child2);
+
+    $this->root2 = $storage->create();
+    $storage->save($this->root2);
+
+    $this->root3 = $storage->create();
+    $storage->save($this->root3);
+  }
+
+  public function testTraversal() {
+    // Test children.
+    $this->assertEqualItemListsWithOrder($this->provider->childrenOf($this->root1)->execute(), array($this->root_child1, $this->root_child2));
+    $this->assertEqualItemListsWithOrder($this->provider->childrenOf($this->root_child1)->execute(), array($this->child1_child));
+    $this->assertEqualItemListsWithOrder($this->provider->childrenOf($this->child1_child)->execute(), array());
+    $this->assertEqualItemListsWithOrder($this->provider->childrenOf($this->root_child2)->execute(), array());
+
+    // Test parent.
+    $this->assertEqualItemLists($this->provider->parentOf($this->root_child1)->execute(), array($this->root1));
+    $this->assertEqualItemLists($this->provider->parentOf($this->root_child1)->execute(), $this->provider->parentOf($this->root_child2)->execute());
+    $this->assertEqualItemLists($this->provider->parentOf($this->root1)->execute(), array());
+
+    // Test ancestors.
+    $this->assertEqualItemLists($this->provider->ancestorsOf($this->root1)->execute(), array());
+    $this->assertEqualItemLists($this->provider->ancestorsOf($this->root_child1)->execute(), array($this->root1));
+    $this->assertEqualItemLists($this->provider->ancestorsOf($this->child1_child)->execute(), array($this->root_child1, $this->root1));
+    $this->assertEqualItemLists($this->provider->ancestorsOf($this->root_child2)->execute(), array($this->root1));
+    $this->assertEqualItemLists($this->provider->ancestorsOf($this->root2)->execute(), array());
+    $this->assertEqualItemLists($this->provider->ancestorsOf($this->root3)->execute(), array());
+
+    // Test root.
+    $this->assertEqualItemLists($this->provider->rootOf($this->root1)->execute(), array($this->root1));
+    $this->assertEqualItemLists($this->provider->rootOf($this->root_child1)->execute(), array($this->root1));
+    $this->assertEqualItemLists($this->provider->rootOf($this->child1_child)->execute(), array($this->root1));
+    $this->assertEqualItemLists($this->provider->rootOf($this->root_child2)->execute(), array($this->root1));
+    $this->assertEqualItemLists($this->provider->rootOf($this->root2)->execute(), array($this->root2));
+    $this->assertEqualItemLists($this->provider->rootOf($this->root2)->execute(), array($this->root2));
+
+    // Test roots.
+    $this->assertEqualItemLists($this->provider->isRoot()->execute(), array($this->root1, $this->root2, $this->root3));
+
+    // Test siblings.
+    $this->assertEqualItemListsWithOrder($this->provider->siblingsOf($this->root1)->execute(), array($this->root1, $this->root2, $this->root3));
+    $this->assertEqualItemListsWithOrder($this->provider->siblingsOf($this->root_child1)->execute(), array($this->root_child1, $this->root_child2));
+    $this->assertEqualItemListsWithOrder($this->provider->siblingsOf($this->child1_child)->execute(), array($this->child1_child));
+    $this->assertEqualItemListsWithOrder($this->provider->siblingsOf($this->root_child2)->execute(), array($this->root_child1, $this->root_child2));
+    $this->assertEqualItemListsWithOrder($this->provider->siblingsOf($this->root2)->execute(), array($this->root1, $this->root2, $this->root3));
+    $this->assertEqualItemListsWithOrder($this->provider->siblingsOf($this->root3)->execute(), array($this->root1, $this->root2, $this->root3));
+  }
+
+  protected function assertEqualItemLists($item_list1, $item_list2, $with_order = FALSE) {
+    $item_ids1 = array();
+    foreach ($item_list1 as $item) {
+      $item_ids1[] = $item->id;
+    }
+    $item_ids2 = array();
+    foreach ($item_list2 as $item) {
+      $item_ids2[] = $item->id;
+    }
+    if (!$with_order) {
+      sort($item_ids1);
+      sort($item_ids2);
+    }
+    return $this->assertIdentical($item_ids1, $item_ids2);
+  }
+
+  protected function assertEqualItemListsWithOrder($item_list1, $item_list2) {
+    return $this->assertEqualItemLists($item_list1, $item_list2, TRUE);
+  }
+}
+
+class TreeTestSimple extends TreeTestAbstract {
+  public static function getInfo() {
+    return array(
+      'name' => 'Simple provider',
+      'description' => 'Test the basic tree provider.',
+      'group' => 'Tree',
+    );
+  }
+
+  function setUp() {
+    parent::setUp(array('entityreference', 'tree', 'tree_test'));
+
+    // Initialize the provider.
+    $storage = new Tree_Storage_SQL_Testable(Database::getConnection(), 'test_tree_table');
+    $this->provider = new Tree_Provider_Simple($storage);
+    $storage->setProvider($this->provider);
+
+    $this->createItems($storage);
+  }
+}

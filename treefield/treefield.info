@@ -1,0 +1,9 @@
+name = Tree Field
+description = "Extends Entity Reference to provide a tree of entities."
+core = 7.x
+package = Fields
+
+dependencies[] = tree
+dependencies[] = entityreference
+
+files[] = tree/storage/Tree_Storage_SQL_Field.class.php

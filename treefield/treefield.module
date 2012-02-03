@@ -1,0 +1,40 @@
+<?php
+
+/**
+ * Implements hook_ctools_plugin_directory().
+ */
+function treefield_ctools_plugin_directory($module, $plugin) {
+  if ($module == 'entityreference') {
+    return $module . '/' . $plugin;
+  }
+}
+
+/**
+ * Simple routing function for metadata defined by the treefield behaviors.
+ */
+function _treefield_metadata_router_get($item, $options, $name, $type, $info) {
+  $field = field_info_field($info['field_name']);
+  // Get the parent (the field), and its parent (the entity).
+  $field_wrapper = $info['parent'];
+  $field_wrapper_info = $field_wrapper->info();
+  $entity_wrapper = $field_wrapper_info['parent'];
+
+  $entity_type = $entity_wrapper->type();
+  $bundle = $entity_wrapper->getBundle();
+
+  $instance = field_info_instance($entity_type, $info['field_name'], $bundle);
+  $handler = _entityreference_get_behavior_handler($info['behavior'], $field, $instance);
+  $function = 'metadata_' . $name . '_get';
+  return $handler->$function($item, $options, $name, $type, $info);
+}
+
+function _treefield_metadata_field_verbatim_get($entity, array $options, $name, $entity_type, &$context) {
+  $items = entity_metadata_field_verbatim_get($entity, $options, $name, $entity_type, $context);
+  if ($items) {
+    return $items;
+  }
+  else {
+    list($id, , ) = entity_extract_ids($entity_type, $entity);
+    return array('entity_id' => $id);
+  }
+}

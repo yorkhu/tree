@@ -1,0 +1,15 @@
+name = Tree
+description = "Provides support for storing tree datastructures."
+core = 7.x
+
+; Providers.
+files[] = tree.provider.inc
+files[] = provider/Tree_Provider_Simple.class.php
+files[] = provider/Tree_Provider_NestedSet.class.php
+
+; Storages.
+files[] = tree.storage.inc
+files[] = storage/Tree_Storage_SQL.class.php
+files[] = storage/Tree_Storage_Testable.class.php
+
+files[] = tests/tree.test

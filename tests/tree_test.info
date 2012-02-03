@@ -1,0 +1,12 @@
+name = Tree
+description = "Provides support for storing tree datastructures."
+core = 7.x
+hidden = TRUE
+
+dependencies[] = tree
+
+; Storages.
+files[] = storage/Tree_Storage_SQL_Testable.class.php
+
+; Tests.
+files[] = tree_test.test

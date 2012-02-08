@@ -38,3 +38,42 @@ function _treefield_metadata_field_verbatim_get($entity, array $options, $name, 
     return array('entity_id' => $id);
   }
 }
+
+
+/**
+ * Implementes hook_preprocess_views_view_table().
+ */
+function treefield_preprocess_views_view_table(&$vars) {
+  $treefield_view = FALSE;
+  foreach ($vars['view']->field as $field_name => $field) {
+    if ($field instanceof treefield_views_handler_field_draggable) {
+      $treefield_view = TRUE;
+      break;
+    }
+  }
+  if (!$treefield_view) {
+    return;
+  }
+
+  // Add table class.
+  $vars['classes_array'][] = 'draggable';
+
+  // Add row class.
+  foreach ($vars['row_classes'] as &$row_classes) {
+    $row_classes[] = 'draggable';
+  }
+
+  foreach ($vars['rows'] as $row_id => &$row) {
+    $values = $vars['view']->result[$row_id];
+    $indentation = theme('indentation', array('size' => $values->{$field->field_alias . '_depth'}));
+
+    reset($row);
+    $first_column = key($row);
+    $row[$first_column] = $indentation . $row[$first_column];
+  }
+
+  $vars['attributes_array']['id'] = drupal_html_id('treefield-table');
+  drupal_add_tabledrag($vars['attributes_array']['id'], 'order', 'sibling', 'treefield-weight');
+  drupal_add_tabledrag($vars['attributes_array']['id'], 'match', 'parent', 'treefield-parent', 'treefield-parent', 'treefield-id');
+}
+

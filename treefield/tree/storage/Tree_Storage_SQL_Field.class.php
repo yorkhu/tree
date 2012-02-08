@@ -14,6 +14,8 @@ class Tree_Storage_SQL_Field extends Tree_Storage_SQL {
       'parent' => $this->field['storage']['details']['sql'][FIELD_LOAD_CURRENT][$this->tableName]['target_id'],
       'weight' => $this->field['storage']['details']['sql'][FIELD_LOAD_CURRENT][$this->tableName]['weight'],
     );
+
+    $this->entityType = $this->field['settings']['target_type'];
   }
 
   public function getDatabase() {
@@ -29,7 +31,7 @@ class Tree_Storage_SQL_Field extends Tree_Storage_SQL {
   }
 
   function query() {
-    return new Tree_Storage_SQL_Field_Query($this->database, $this->tableName, $this->columnMap);
+    return new Tree_Storage_SQL_Field_Query($this->database, $this->tableName, $this->entityType, $this->columnMap);
   }
 
   public function itemFromFieldData($entity_id, array $field_data) {
@@ -40,6 +42,24 @@ class Tree_Storage_SQL_Field extends Tree_Storage_SQL {
     );
     return new Tree_Storage_SQL_Item($row, $this->columnMap);
   }
+
+  public function views_data_alter(&$data, $field) {
+    $additional_fields = array();
+    foreach ($this->columnMap as $name => $real_name) {
+      $additional_fields[$name] = array('field' => $real_name);
+    }
+    $data[$this->tableName]['tree_draggable'] = array(
+      'title' => t('Draggable'),
+      'group' => t('Tree'),
+      'field' => array(
+        'handler' => 'treefield_views_handler_field_draggable',
+        'click sortable' => FALSE,
+        'real field' => $this->columnMap['parent'],
+        'additional fields' => $additional_fields,
+        'field api' => $this->field,
+      ),
+    );
+  }
 }
 
 class Tree_Storage_SQL_Field_Query extends Tree_Storage_SQL_Query {
@@ -49,7 +69,8 @@ class Tree_Storage_SQL_Field_Query extends Tree_Storage_SQL_Query {
 
     // Join the field table to the entity table so that the missing IDs
     // appear in the tree.
-    $this->query->leftJoin($entity_table, 'e', 'e.' . $entity_info['entity keys']['id'] . ' = t.entity_type');
+    $entity_info = entity_get_info($entity_type);
+    $this->query->leftJoin($entity_info['base table'], 'e', 'e.' . $entity_info['entity keys']['id'] . ' = t.entity_type');
 
     $this->columnMap = $column_map;
   }

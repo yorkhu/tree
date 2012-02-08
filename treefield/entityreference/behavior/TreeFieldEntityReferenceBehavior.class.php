@@ -82,6 +82,8 @@ class TreeFieldEntityReferenceBehavior extends EntityReference_BehaviorHandler_A
   }
 
   public function views_data_alter(&$data, $field) {
+    $this->storage->views_data_alter($data, $field);
+
     if ($this->provider instanceof Tree_Provider_SQL) {
       $this->provider->views_data_alter($data);
     }
@@ -93,6 +95,10 @@ class TreeFieldEntityReferenceBehavior extends EntityReference_BehaviorHandler_A
       $item = $this->storage->itemFromFieldData($id, $items[0]);
       $this->provider->preSave($item);
     }
+  }
+
+  public function is_empty_alter(&$empty, $item, $field) {
+    $empty = FALSE;
   }
 
   public function insert($entity_type, $entity, $field, $instance, $langcode, &$items) {

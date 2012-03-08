@@ -79,21 +79,29 @@ class Tree_Storage_SQL_Testable extends Tree_Storage_SQL implements Tree_Storage
   }
 
   function save(Tree_Storage_Item $item) {
-    $this->provider->preSave($item);
-    $row = $item->getRow();
-    if (isset($row[$this->columnMap['id']])) {
-      $this->database->update($this->tableName)
-        ->fields($row)
-        ->condition($this->columnMap['id'], $row[$this->columnMap['id']])
-        ->execute();
-      $this->provider->postUpdate($item);
+    $transaction = db_transaction();
+    try {
+      $this->provider->preSave($item);
+      $row = $item->getRow();
+      if (isset($row[$this->columnMap['id']])) {
+        $this->database->update($this->tableName)
+          ->fields($row)
+          ->condition($this->columnMap['id'], $row[$this->columnMap['id']])
+          ->execute();
+        $this->provider->postUpdate($item);
+      }
+      else {
+        $id = $this->database->insert($this->tableName)
+          ->fields($row)
+          ->execute();
+        $item->id = $id;
+        $this->provider->postInsert($item);
+      }
     }
-    else {
-      $id = $this->database->insert($this->tableName)
-        ->fields($row)
-        ->execute();
-      $item->id = $id;
-      $this->provider->postInsert($item);
+    catch (Exception $e) {
+      $transaction->rollback();
+      watchdog_exception('tree', $e);
+      throw $e;
     }
   }
 

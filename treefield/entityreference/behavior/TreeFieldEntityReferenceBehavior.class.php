@@ -50,12 +50,8 @@ class TreeFieldEntityReferenceBehavior extends EntityReference_BehaviorHandler_A
   public function property_info_alter(&$info, $entity_type, $field, $instance, $field_type) {
     $property = &$info[$entity_type]['bundles'][$instance['bundle']]['properties'][$field['field_name']];
 
-    $property = array(
-      'getter callback' => '_treefield_metadata_field_verbatim_get',
-      'setter callback' => 'entity_metadata_field_verbatim_set',
-
-      'property info' => array(),
-    );
+    $property['getter callback'] = '_treefield_metadata_field_verbatim_get';
+    $property['property info'] = array();
 
     $properties = &$property['property info'];
 

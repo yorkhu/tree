@@ -123,6 +123,24 @@ class Tree_Provider_NestedSet extends Tree_Provider_Simple implements Tree_Provi
     // Find the insertion point.
     list($target, $mode) = $this->findInsertionTarget($item);
 
+    if (!$target) {
+      // This means there is a bug in our code.
+      throw new Exception(t('No target found for @id, strategy @mode', array('@id' => $item->id, '@mode' => $mode)));
+    }
+
+    if ($mode != 'child' && $target['id'] == $item->id) {
+      // Nothing to do.
+      return;
+    }
+
+    if ($current_row['id'] == $target['id']) {
+      throw new Exception(t('Invalid move: would move node @id as its own parent.', array('@id' => $current_row['id'])));
+    }
+    else if (($current_row['nested_left'] <= $target['nested_left'] && $target['nested_left'] <= $current_row['nested_right'])
+      || ($current_row['nested_left'] <= $target['nested_right'] && $target['nested_right'] <= $current_row['nested_right'])) {
+      throw new Exception(t('Invalid move: would move node @id as a child of @id2, which is already its child.', array('@id' => $current_row['id'], '@id2' => $target['id'])));
+    }
+
     if ($mode == 'child') {
       $bound = $target['nested_right'];
     }
@@ -181,7 +199,7 @@ class Tree_Provider_NestedSet extends Tree_Provider_Simple implements Tree_Provi
       $target = $this->treeQuery()->condition('i.' . $this->columnMap['id'], $item->parent)->execute()->fetchAssoc();
       $mode = 'child';
     }
-    else if ($bounds['weight_min'] > $item->weight) {
+    else if ($bounds['weight_min'] >= $item->weight) {
       // Insert at the begining of the subtree.
       $query = $this->treeQuery();
       if ($item->parent !== NULL) {
@@ -204,7 +222,7 @@ class Tree_Provider_NestedSet extends Tree_Provider_Simple implements Tree_Provi
       }
       $target = $query
         ->condition('i.' . $this->columnMap['weight'], $item->weight, '<')
-        ->orderBy('t.nested_left', 'ASC')->range(0, 1)->execute()->fetchAssoc();
+        ->orderBy('t.nested_left', 'DESC')->range(0, 1)->execute()->fetchAssoc();
       $mode = 'after';
     }
 

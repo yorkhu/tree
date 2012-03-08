@@ -55,23 +55,32 @@ class treefield_views_handler_field_draggable extends views_handler_field {
   function views_form_submit($form, &$form_state) {
     // Save the entities in reverse tree order of the original tree,
     // so that every move is valid.
-    foreach (array_reverse($form_state['values'][$this->options['id']]) as $row_index => $values) {
-      $entity_type = $this->definition['field api']['settings']['target_type'];
-      $entity = entity_load_single($entity_type, $values['id']);
+    $transaction = db_transaction();
+    try {
+      foreach (array_reverse($form_state['values'][$this->options['id']]) as $row_index => $values) {
+        $entity_type = $this->definition['field api']['settings']['target_type'];
+        $entity = entity_load_single($entity_type, $values['id']);
 
-      $field_item = &$entity->{$this->definition['field api']['field_name']}[LANGUAGE_NONE][0];
-      $save = FALSE;
-      if (!isset($field_item['target_id']) || $field_item['target_id'] != $values['parent']) {
-        $field_item['target_id'] = $values['parent'];
-        $save = TRUE;
+        $field_item = &$entity->{$this->definition['field api']['field_name']}[LANGUAGE_NONE][0];
+        $save = FALSE;
+        if (!isset($field_item['target_id']) || $field_item['target_id'] != $values['parent']) {
+          $field_item['target_id'] = $values['parent'];
+          $save = TRUE;
+        }
+        if (!isset($field_item['weight']) || $field_item['weight'] != $values['weight']) {
+          $field_item['weight'] = $values['weight'];
+          $save = TRUE;
+        }
+        if ($save) {
+          dsm($entity);
+          entity_save($entity_type, $entity);
+        }
       }
-      if (!isset($field_item['weight']) || $field_item['weight'] != $values['weight']) {
-        $field_item['weight'] = $values['weight'];
-        $save = TRUE;
-      }
-      if ($save) {
-        entity_save($entity_type, $entity);
-      }
+    }
+    catch (Exception $e) {
+      $transaction->rollback();
+      watchdog_exception('tree', $e);
+      throw $e;
     }
   }
 }

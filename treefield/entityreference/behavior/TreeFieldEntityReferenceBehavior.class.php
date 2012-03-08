@@ -105,19 +105,32 @@ class TreeFieldEntityReferenceBehavior extends EntityReference_BehaviorHandler_A
     $empty = FALSE;
   }
 
-  public function insert($entity_type, $entity, $field, $instance, $langcode, &$items) {
-    if (count($items)) {
+  public function postInsert($entity_type, $entity, $field, $instance) {
+    if (!empty($entity->{$field['field_name']})) {
       list($id, , ) = entity_extract_ids($entity_type, $entity);
-      $item = $this->storage($field)->itemFromFieldData($id, $items[0]);
+      // TODO: not ideal, should we track per language?
+      $items = reset($entity->{$field['field_name']});
+      $item = reset($items);
+      $item = $this->storage($field)->itemFromFieldData($id, $item);
       $this->provider($field)->postInsert($item);
     }
   }
 
-  public function update($entity_type, $entity, $field, $instance, $langcode, &$items) {
-    if (count($items)) {
+  public function postUpdate($entity_type, $entity, $field, $instance) {
+    if (!empty($entity->{$field['field_name']})) {
       list($id, , ) = entity_extract_ids($entity_type, $entity);
-      $item = $this->storage($field)->itemFromFieldData($id, $items[0]);
+      // TODO: not ideal, should we track per language?
+      $items = reset($entity->{$field['field_name']});
+      $item = reset($items);
+      $item = $this->storage($field)->itemFromFieldData($id, $item);
       $this->provider($field)->postUpdate($item);
+    }
+  }
+
+  public function postDelete($entity_type, $entity, $field, $instance) {
+    if (!empty($entity->{$field['field_name']})) {
+      list($id, , ) = entity_extract_ids($entity_type, $entity);
+      $this->provider($field)->postDelete($id);
     }
   }
 

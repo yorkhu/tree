@@ -61,6 +61,10 @@ class treefield_views_handler_field_draggable extends views_handler_field {
         $entity_type = $this->definition['field api']['settings']['target_type'];
         $entity = entity_load_single($entity_type, $values['id']);
 
+        if (empty($values['parent'])) {
+          $values['parent'] = NULL;
+        }
+
         $field_item = &$entity->{$this->definition['field api']['field_name']}[LANGUAGE_NONE][0];
         $save = FALSE;
         if (!isset($field_item['target_id']) || $field_item['target_id'] != $values['parent']) {
@@ -72,7 +76,6 @@ class treefield_views_handler_field_draggable extends views_handler_field {
           $save = TRUE;
         }
         if ($save) {
-          dsm($entity);
           entity_save($entity_type, $entity);
         }
       }

@@ -119,6 +119,14 @@ class Tree_Provider_NestedSet extends Tree_Provider_Simple implements Tree_Provi
     $this->updateItem($item, $current_row);
   }
 
+  public function postDelete($item_id) {
+    // Clean-up the row.
+    // TODO: decide what to do with regard to cascading.
+    $this->database->delete($this->treeTable)
+      ->condition('id', $item_id)
+      ->execute();
+  }
+
   public function updateItem($item, $current_row) {
     // Find the insertion point.
     list($target, $mode) = $this->findInsertionTarget($item);

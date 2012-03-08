@@ -53,8 +53,9 @@ class treefield_views_handler_field_draggable extends views_handler_field {
   }
 
   function views_form_submit($form, &$form_state) {
-    // Load the entities.
-    foreach ($form_state['values'][$this->options['id']] as $row_index => $values) {
+    // Save the entities in reverse tree order of the original tree,
+    // so that every move is valid.
+    foreach (array_reverse($form_state['values'][$this->options['id']]) as $row_index => $values) {
       $entity_type = $this->definition['field api']['settings']['target_type'];
       $entity = entity_load_single($entity_type, $values['id']);
 

@@ -37,8 +37,8 @@ class Tree_Storage_SQL_Field extends Tree_Storage_SQL {
   public function itemFromFieldData($entity_id, array $field_data) {
     $row = array(
       $this->columnMap['id'] => $entity_id,
-      $this->columnMap['parent'] => $field_data['target_id'],
-      $this->columnMap['weight'] => $field_data['weight'],
+      $this->columnMap['parent'] => isset($field_data['target_id']) ? $field_data['target_id'] : NULL,
+      $this->columnMap['weight'] => isset($field_data['weight']) ? $field_data['weight'] : 0,
     );
     return new Tree_Storage_SQL_Item($row, $this->columnMap);
   }

@@ -25,7 +25,7 @@ function _treefield_metadata_router_get($item, $options, $name, $type, $info) {
   $instance = field_info_instance($entity_type, $info['field_name'], $bundle);
   $handler = _entityreference_get_behavior_handler($info['behavior'], $field, $instance);
   $function = 'metadata_' . $name . '_get';
-  return $handler->$function($item, $options, $name, $type, $info);
+  return $handler->$function($item, $options, $name, $type, $info, $field);
 }
 
 function _treefield_metadata_field_verbatim_get($entity, array $options, $name, $entity_type, &$context) {

@@ -28,14 +28,16 @@ function _treefield_metadata_router_get($item, $options, $name, $type, $info) {
   return $handler->$function($item, $options, $name, $type, $info, $field);
 }
 
+/**
+ * Custom entity_metadata_field_verbatim_get() that returns an empty data structure when the field is empty.
+ */
 function _treefield_metadata_field_verbatim_get($entity, array $options, $name, $entity_type, &$context) {
-  $items = entity_metadata_field_verbatim_get($entity, $options, $name, $entity_type, $context);
-  if ($items) {
-    return $items;
+  $item = entity_metadata_field_verbatim_get($entity, $options, $name, $entity_type, $context);
+  if ($item) {
+    return $item;
   }
   else {
-    list($id, , ) = entity_extract_ids($entity_type, $entity);
-    return array('entity_id' => $id);
+    return array('target_id' => NULL, 'weight' => NULL);
   }
 }
 

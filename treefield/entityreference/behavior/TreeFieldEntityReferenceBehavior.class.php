@@ -50,6 +50,7 @@ class TreeFieldEntityReferenceBehavior extends EntityReference_BehaviorHandler_A
   public function property_info_alter(&$info, $entity_type, $field, $instance, $field_type) {
     $property = &$info[$entity_type]['bundles'][$instance['bundle']]['properties'][$field['field_name']];
 
+    $property['type'] = 'struct';
     $property['getter callback'] = '_treefield_metadata_field_verbatim_get';
     $property['property info'] = array();
 
@@ -140,8 +141,10 @@ class TreeFieldEntityReferenceBehavior extends EntityReference_BehaviorHandler_A
     $field_info = $field_wrapper->info();
     // Then, move one level up to the entity wrapper.
     $entity_wrapper = $field_info['parent'];
+    $entity_info = $entity_wrapper->entityInfo();
+    $entity = $entity_wrapper->value();
     // Fetch the identifier of the entity.
-    return $this->storage($field)->itemFromFieldData($entity_wrapper->value(array('identifier' => TRUE)), $item);
+    return $this->storage($field)->itemFromFieldData($entity->{$entity_info['entity keys']['id']}, $item);
   }
 
   public function metadata_parent_get($item, $options, $name, $type, $info, $field) {

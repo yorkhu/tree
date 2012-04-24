@@ -8,6 +8,24 @@ class TreeFieldEntityReferenceBehavior extends EntityReference_BehaviorHandler_A
   protected $providers = array();
   protected $storages = array();
 
+  public function settingsForm($field, $instance) {
+    $plugins = tree_get_providers('Tree_Storage_SQL_Field');
+    $options = array();
+    foreach ($plugins as $plugin_name => $plugin_info) {
+      $options[$plugin_name] = $plugin_info['title'];
+    }
+
+    $form['provider'] = array(
+      '#title' => t('Provider'),
+      '#type' => 'select',
+      '#required' => TRUE,
+      '#multiple' => FALSE,
+      '#size' => 1,
+      '#options' => $options,
+    );
+    return $form;
+  }
+
   public function storage($field) {
     if (!isset($this->storages[$field['field_name']])) {
       // @todo: Currently hardcoded. We should have two implementation here:
@@ -19,8 +37,8 @@ class TreeFieldEntityReferenceBehavior extends EntityReference_BehaviorHandler_A
 
   public function provider($field) {
     if (!isset($this->providers[$field['field_name']])) {
-      // @todo: Currently hardcoded, make it onfigurable.
-      $provider = new Tree_Provider_NestedSet($this->storage($field));
+      $provider_name = !empty($field['settings']['handler_settings']['behaviors']['treefield_sql']['provider']) ? $field['settings']['handler_settings']['behaviors']['treefield_sql']['provider'] : 'Tree_Provider_Simple';
+      $provider = new $provider_name($this->storage($field));
 
       // Create the schema of the provider.
       // @todo: Move somewhere else.

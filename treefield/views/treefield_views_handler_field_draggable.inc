@@ -3,9 +3,13 @@
 class treefield_views_handler_field_draggable extends views_handler_field {
 
   function post_execute(&$values) {
+    // Compute the depth of each item.
     // @todo: we need a depth field in the database.
-    $storage = new Tree_Storage_SQL_Field(Database::getConnection(), $this->definition['field api']);
-    $provider = new Tree_Provider_NestedSet($storage);
+    $field = field_info_field($this->definition['field api']);
+    $behaviors = entityreference_get_behavior_handlers($field);
+
+    $storage = $behaviors['tree']->storage($field);
+    $provider = $behaviors['tree']->provider($field);
     $column_map = $storage->getColumnMap();
     foreach ($values as $row_index => $row) {
       // Build an item.

@@ -2,6 +2,8 @@ name = Tree
 description = "Provides support for storing tree datastructures."
 core = 7.x
 
+dependencies[] = ctools
+
 ; Providers.
 files[] = tree.provider.inc
 files[] = provider/Tree_Provider_Abstract.class.php

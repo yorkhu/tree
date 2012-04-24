@@ -5,19 +5,7 @@
  *
  * It works regardless of the underlying storage engine.
  */
-class Tree_Provider_Simple implements Tree_Provider {
-
-  public function __construct(Tree_Storage $storage) {
-    $this->storage = $storage;
-  }
-
-  public function postLoad(Tree_Storage_Item $item) {
-    // Nothing to do.
-  }
-
-  public function preSave(Tree_Storage_Item $item) {
-    // Nothing to do here.
-  }
+class Tree_Provider_Simple extends Tree_Provider_Abstract implements Tree_Provider {
 
   public function parentOf(Tree_Storage_Item $item, Tree_Storage_Query $query = NULL) {
     if (!isset($query)) {

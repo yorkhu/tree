@@ -47,9 +47,30 @@ interface Tree_Provider {
   public function isRoot(Tree_Storage_Query $query = NULL);
 
   /**
-   * Act on load.
+   * Act after deletion has happend.
+   *
+   * @param int $item_id
+   */
+  public function postDelete($item_id);
+
+  /**
+   * Act after insertion has happened.
+   *
+   * @param Tree_Storage_Item $item
+   */
+  public function postInsert(Tree_Storage_Item $item);
+
+  /**
+   * Act after load has happened.
    */
   public function postLoad(Tree_Storage_Item $item);
+
+  /**
+   * Act after update has happened.
+   *
+   * @param Tree_Storage_Item $item
+   */
+  public function postUpdate(Tree_Storage_Item $item);
 
   /**
    * Act on pre-save.

@@ -5,7 +5,7 @@
  */
 class Tree_Provider_NestedSet extends Tree_Provider_Simple implements Tree_Provider_SQL {
   public function __construct(Tree_Storage $storage) {
-    $this->storage = $storage;
+    parent::__construct($storage);
 
     $this->database = $this->storage->getDatabase();
     $this->columnMap = $this->storage->getColumnMap();

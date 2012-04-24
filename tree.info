@@ -4,6 +4,7 @@ core = 7.x
 
 ; Providers.
 files[] = tree.provider.inc
+files[] = provider/Tree_Provider_Abstract.class.php
 files[] = provider/Tree_Provider_Simple.class.php
 files[] = provider/Tree_Provider_NestedSet.class.php
 

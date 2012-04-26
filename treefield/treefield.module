@@ -29,7 +29,10 @@ function _treefield_metadata_router_get($item, $options, $name, $type, $info) {
 }
 
 /**
- * Custom entity_metadata_field_verbatim_get() that returns an empty data structure when the field is empty.
+ * Custom entity_metadata_field_verbatim_get().
+ *
+ * @return array
+ *   Empty data structure when the field is empty, verbatim array otherwise.
  */
 function _treefield_metadata_field_verbatim_get($entity, array $options, $name, $entity_type, &$context) {
   $item = entity_metadata_field_verbatim_get($entity, $options, $name, $entity_type, $context);
@@ -43,7 +46,9 @@ function _treefield_metadata_field_verbatim_get($entity, array $options, $name, 
 
 
 /**
- * Implementes hook_preprocess_views_view_table().
+ * Implements hook_preprocess_views_view_table().
+ *
+ * TODO: explain the purpose of this implementation.
  */
 function treefield_preprocess_views_view_table(&$vars) {
   $treefield_view = FALSE;
@@ -79,3 +84,17 @@ function treefield_preprocess_views_view_table(&$vars) {
   drupal_add_tabledrag($vars['attributes_array']['id'], 'match', 'parent', 'treefield-parent', 'treefield-parent', 'treefield-id');
 }
 
+/**
+ * Implements hook_field_update_forbid().
+ *
+ * Forbid updates that would change cardinality to non-1 on treefields.
+ */
+function treefield_field_update_forbid($field, $prior_field, $has_data) {
+  if ($field['type'] != 'entityreference'
+    || empty($field['settings']['handler_settings']['behaviors']['treefield_sql']['status'])) {
+    return;
+  }
+  if ($field['cardinality'] != 1) {
+    throw new FieldUpdateForbiddenException("Cannot update a tree field with cardinality not equal to one.");
+  }
+}

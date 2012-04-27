@@ -5,11 +5,22 @@ class treefield_views_handler_field_draggable extends views_handler_field {
   function post_execute(&$values) {
     // Compute the depth of each item.
     // @todo: we need a depth field in the database.
-    $field = field_info_field($this->definition['field api']);
+    $field = field_info_field($this->definition['field api']['field_name']);
     $behaviors = entityreference_get_behavior_handlers($field);
 
-    $storage = $behaviors['tree']->storage($field);
-    $provider = $behaviors['tree']->provider($field);
+    $tree_behavior = NULL;
+    foreach ($behaviors as $behavior) {
+      if ($behavior instanceof TreeFieldEntityReferenceBehavior) {
+        $tree_behavior = $behavior;
+        break;
+      }
+    }
+    if (!isset($tree_behavior)) {
+      throw new TreeFieldMissingProviderException();
+    }
+
+    $storage = $behavior->storage($field);
+    $provider = $behavior->provider($field);
     $column_map = $storage->getColumnMap();
     foreach ($values as $row_index => $row) {
       // Build an item.

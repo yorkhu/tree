@@ -1,5 +1,7 @@
 <?php
 
+class TreeFieldMissingProviderException extends Exception {}
+
 /**
  * Implements hook_ctools_plugin_directory().
  */

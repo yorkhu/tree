@@ -14,7 +14,14 @@ class TreeFieldEntityReferenceBehavior extends EntityReference_BehaviorHandler_A
     foreach ($plugins as $plugin_name => $plugin_info) {
       $options[$plugin_name] = $plugin_info['title'];
     }
+    // This should never happen, since treefield comes with two builtin providers.
+    if (empty($options)) {
+      throw new TreeFieldMissingProviderException('No provider found for treefield.');
+    }
 
+    $default_provider = isset($field['settings']['handler_settings']['behaviors']['treefield_sql']['provider'])
+      ? $field['settings']['handler_settings']['behaviors']['treefield_sql']['provider']
+      : reset(array_keys($options));
     $form['provider'] = array(
       '#title' => t('Provider'),
       '#type' => 'select',
@@ -22,6 +29,7 @@ class TreeFieldEntityReferenceBehavior extends EntityReference_BehaviorHandler_A
       '#multiple' => FALSE,
       '#size' => 1,
       '#options' => $options,
+      '#default_value' => $default_provider,
     );
     return $form;
   }
